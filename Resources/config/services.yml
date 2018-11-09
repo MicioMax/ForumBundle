@@ -1,0 +1,4 @@
+services:
+    con4gis.logger:
+        alias: monolog.logger
+        public: true

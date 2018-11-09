@@ -14,6 +14,7 @@
 namespace con4gis\ForumBundle\Resources\contao\classes;
 
 use con4gis\CoreBundle\Resources\contao\classes\notification\C4GNotification;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class C4GForumSubscription
@@ -338,7 +339,7 @@ use con4gis\CoreBundle\Resources\contao\classes\notification\C4GNotification;
                             $notification->setTokenValue('unsubscribe_all_link', $this->generateUnsubscribeLinkAll($subscriber['email'], $sUrl));
                             $notification->send($notificationIDs);
                         } catch (\Exception $e) {
-                            \System::getContainer()->get('logger')->error($e->getMessage());
+                            \System::getContainer()->get('con4gis.logger')->error($e->getMessage());
                         }
                     }
                 }
