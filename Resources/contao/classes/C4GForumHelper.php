@@ -51,7 +51,11 @@ class C4GForumHelper extends \System
 
 	public $permissionError = "";
 
-
+	private static function feUserLoggedIn() {
+		if(defined('FE_USER_LOGGED_IN'))
+			return FE_USER_LOGGED_IN;
+		return true;
+	}
 
 	/**
 	 * Konstruktor
@@ -169,7 +173,7 @@ class C4GForumHelper extends \System
     public function checkPermissionWithData( $right, $memberGroups, $adminGroups, $guestRights, $memberRights, $adminRights, $userId = 0)
     {
     	$rights = $guestRights;
-    	if ((FE_USER_LOGGED_IN) && (!$this->checkGuestRights)) {
+    	if ((static::feUserLoggedIn()) && (!$this->checkGuestRights)) {
             if (($userId != 0) && ($this->User->id != $userId)) {
                 $userGroups = deserialize($this->Database->prepare(
                     "SELECT groups FROM tl_member  " .

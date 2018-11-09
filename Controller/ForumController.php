@@ -23,6 +23,10 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ForumController extends Controller
 {
+	private function isLoggedIn() {
+        return \defined('BE_USER_LOGGED_IN') && BE_USER_LOGGED_IN === true;
+	}
+
     public function ajaxAction(Request $request, $id, $req = '')
     {
         $response = new JsonResponse();
@@ -52,14 +56,14 @@ class ForumController extends Controller
         }
 
         // Show to guests only
-        if ($objModule->guests && FE_USER_LOGGED_IN && !BE_USER_LOGGED_IN && !$objModule->protected)
+        if ($objModule->guests && FE_USER_LOGGED_IN && !$this->isLoggedIn() && !$objModule->protected)
         {
             $response->setData('Forbidden');
             $response->setStatusCode(403);
         }
 
         // Protected element
-        if (!BE_USER_LOGGED_IN && $objModule->protected)
+        if (!$this->isLoggedIn() && $objModule->protected)
         {
             if (!FE_USER_LOGGED_IN)
             {
