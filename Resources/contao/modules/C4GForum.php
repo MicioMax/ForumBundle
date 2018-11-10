@@ -1288,8 +1288,6 @@ namespace con4gis\ForumBundle\Resources\contao\modules;
             }
 
             $text = $post['text'];
-            $text = html_entity_decode($text);
-
 
             // search in the forum text for lib and replace by assets/vendor (file download compatibility)
             $text = str_replace('/lib', '/assets/vendor', $text);
@@ -4084,7 +4082,11 @@ JSPAGINATE;
                      '<input type="hidden" name="uploadPath" value="' . $imageUploadPath->path . '">' .
                      '<input type="hidden" name="site" class="formdata" value="' . $sCurrentSite . '">' .
                      '<input type="hidden" name="hsite" class="formdata" value="' . $sCurrentSiteHashed . '">' .
-                     '<textarea' . $editorId . ' name="post" cols="80" rows="15" class="formdata ui-corner-all">' . strip_tags($post['text']) . '</textarea>' .
+
+                     // we DON'T want to strip html tags here, as we store in html into database
+                     // BUT we must encode entities because editor expects pure text... 
+                     '<textarea' . $editorId . ' name="post" cols="80" rows="15" class="formdata ui-corner-all">' . htmlentities($post['text']) . '</textarea>' .
+
                      '</div>';
 
             $data .= $this->getPostlinkForForm('c4gForumEditPostLink', $post['forumid'], $dialogId, $post['linkname'], $post['linkurl']);

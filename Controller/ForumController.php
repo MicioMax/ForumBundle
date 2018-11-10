@@ -159,7 +159,7 @@ class ForumController extends Controller
                     }
                     $aData = array(
                         "subject"      => \Input::post('subject'),
-                        "message"      => htmlentities($_POST['message']),
+                        "message"      => $_POST['message'],
                         "sender_id"    => $feUser->id,
                         "recipient_id" => $iRecipientId,
                         "dt_created"   => time(),
