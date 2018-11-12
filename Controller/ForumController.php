@@ -179,6 +179,10 @@ class ForumController extends Controller
                     $notificationData['user_name'] = $aRecipient['username'];
                     $notificationData['user_email'] = $aRecipient['email'];
                     $notificationData['responsible_username'] = $this->getUser()->username;
+                    $notificationData['admin_email'] = $this->getUser()->email;
+                    $notificationData['subject'] = $aData["subject"];
+                    $notificationData['text'] = $aData["message"];
+                    $notificationData['html'] = $aData["message"];
                     $this->container->get('contao.framework')->initialize();
                     $test = \Contao\Controller::replaceInsertTags('{{link_url::'.$result['new_pm_redirect'].'}}');
                     $notificationData['redirect'] = $_SERVER['SERVER_NAME'].'/'.$test;
