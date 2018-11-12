@@ -164,8 +164,8 @@ $GLOBALS['NOTIFICATION_CENTER']['NOTIFICATION_TYPE']['con4gis Forum'] = array
     (
         'recipients'           => array('admin_email','user_email'),
         'email_subject'        => array('admin_email','responsible_username','subject'),
-        'email_text'           => array('user_name', 'responsible_username', 'link','message','subject'),
-        'email_html'           => array('user_name', 'responsible_username', 'link','message','subject'),
+        'email_text'           => array('user_name', 'responsible_username', 'admin_email', 'link','message','subject'),
+        'email_html'           => array('user_name', 'responsible_username', 'admin_email', 'link','message','subject'),
         'email_sender_name'    => array('admin_email','responsible_username'),
         'email_sender_address' => array('admin_email'),
         'email_recipient_cc'   => array('admin_email'),
