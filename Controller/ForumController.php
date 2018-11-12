@@ -10,6 +10,7 @@ namespace con4gis\ForumBundle\Controller;
 
 
 use con4gis\CoreBundle\Resources\contao\classes\C4GUtils;
+use con4gis\CoreBundle\Resources\contao\classes\notification\C4GNotification;
 use con4gis\ForumBundle\Resources\contao\models\C4gForumPn;
 use con4gis\ForumBundle\Resources\contao\modules\C4GForum;
 use con4gis\ProjectsBundle\Classes\Database\C4GBrickDatabase;
@@ -23,10 +24,6 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ForumController extends Controller
 {
-	private function isLoggedIn() {
-        return \defined('BE_USER_LOGGED_IN') && BE_USER_LOGGED_IN === true;
-	}
-
     public function ajaxAction(Request $request, $id, $req = '')
     {
         $response = new JsonResponse();
@@ -56,16 +53,16 @@ class ForumController extends Controller
         }
 
         // Show to guests only
-        if ($objModule->guests && FE_USER_LOGGED_IN && !$this->isLoggedIn() && !$objModule->protected)
+        if ($objModule->guests && C4GUtils::isFrontendUserLoggedIn() && !C4GUtils::isBackendUserLoggedIn() && !$objModule->protected)
         {
             $response->setData('Forbidden');
             $response->setStatusCode(403);
         }
 
         // Protected element
-        if (!$this->isLoggedIn() && $objModule->protected)
+        if (!C4GUtils::isBackendUserLoggedIn() && $objModule->protected)
         {
-            if (!FE_USER_LOGGED_IN)
+            if (!C4GUtils::isFrontendUserLoggedIn())
             {
                 $response->setData('Forbidden');
                 $response->setStatusCode(403);
@@ -98,7 +95,7 @@ class ForumController extends Controller
         $response = new JsonResponse();
         $feUser = FrontendUser::getInstance();
         $feUser->authenticate();
-        if (!FE_USER_LOGGED_IN) {
+        if (!C4GUtils::isFrontendUserLoggedIn()) {
             $response->setStatusCode(400);
             return $response;
         }
@@ -159,7 +156,7 @@ class ForumController extends Controller
                     }
                     $aData = array(
                         "subject"      => \Input::post('subject'),
-                        "message"      => $_POST['message'],
+                        "message"      => htmlentities($_POST['message']),
                         "sender_id"    => $feUser->id,
                         "recipient_id" => $iRecipientId,
                         "dt_created"   => time(),
@@ -174,26 +171,19 @@ class ForumController extends Controller
                     $db = \Database::getInstance();
                     $stmt = $db->prepare("SELECT new_pm_redirect, mail_new_pm FROM tl_module WHERE id = ?");
                     $result = $stmt->execute($forumModule)->fetchAssoc();
-
-                    $notificationArray = unserialize($result['mail_new_pm']);
-                    $notificationData['user_name'] = $aRecipient['username'];
-                    $notificationData['user_email'] = $aRecipient['email'];
-                    $notificationData['responsible_username'] = $this->getUser()->username;
-                    $notificationData['admin_email'] = $this->getUser()->email;
-                    $notificationData['subject'] = $aData["subject"];
-                    $notificationData['text'] = $aData["message"];
-                    $notificationData['html'] = $aData["message"];
                     $this->container->get('contao.framework')->initialize();
-                    $test = \Contao\Controller::replaceInsertTags('{{link_url::'.$result['new_pm_redirect'].'}}');
-                    $notificationData['redirect'] = $_SERVER['SERVER_NAME'].'/'.$test;
+                    $route = \Contao\Controller::replaceInsertTags('{{link_url::'.$result['new_pm_redirect'].'}}');
 
-                    foreach ($notificationArray as $notification) {
-                        $objNotification = \NotificationCenter\Model\Notification::findByPk($notification);
-                        if ($objNotification !== null) {
-                            $objNotification->send($notificationData);
-                        }
-                    }
-                    
+                    $notification = new C4GNotification($GLOBALS['NOTIFICATION_CENTER']['NOTIFICATION_TYPE']['con4gis Forum']['mail_new_pm']);
+                    $notification->setTokenValue('user_name', $aRecipient['username']);
+                    $notification->setTokenValue('user_email', $aRecipient['email']);
+                    $notification->setTokenValue('responsible_username', $this->getUser()->username);
+                    $notification->setTokenValue('link', $_SERVER['SERVER_NAME'].'/'.$route);
+                    $notification->setTokenValue('admin_email', $GLOBALS['TL_CONFIG']['adminEmail']);
+                    $notification->setTokenValue('subject', $aData['subject']);
+                    $notification->setTokenValue('message', $aData['message']);
+                    $notification->send(unserialize($result['mail_new_pm']));
+
                     $response->setData(['success' => true]);
                     return $response;
                     break;
